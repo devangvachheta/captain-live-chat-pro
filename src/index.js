@@ -1,9 +1,10 @@
 import AiSettings from './page/ai_settings/ai_settings.jsx';
 import WhiteLabelSettings from './page/white_label/white_label.jsx';
+import ProfileAlerts from './page/profile_alerts/profile_alerts.jsx';
 
 /**
  * This script is enqueued as a dependency of the free plugin's own
- * 'captlc-admin-script' (see class-captlc-ai-agent-admin.php), so it
+ * 'captlc-admin-script' (see class-captlc-pro-admin.php), so it
  * always finishes loading after that script has already registered
  * `window.CaptlcExtensions` on the same admin page. Registering here
  * swaps the free plugin's "install the add-on" placeholders for the
@@ -14,6 +15,8 @@ if ( typeof window !== 'undefined' && window.CaptlcExtensions ) {
 	if ( typeof window.CaptlcExtensions.registerPage === 'function' ) {
 		window.CaptlcExtensions.registerPage( 'ai-settings', AiSettings );
 		window.CaptlcExtensions.registerPage( 'white-label', WhiteLabelSettings );
+		// Each agent's own pop-up alert switches on the Profile page.
+		window.CaptlcExtensions.registerPage( 'profile-alerts', ProfileAlerts );
 	}
 	// Lets free-plugin UI (export buttons, the 5-reply Canned Responses cap,
 	// etc.) know Pro is active - see src/hooks/use_is_pro.js in the free

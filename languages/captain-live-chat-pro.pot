@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-06T21:14:21+00:00\n"
+"POT-Creation-Date: 2026-10-07T16:03:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: captain-live-chat-pro\n"
@@ -222,27 +222,27 @@ msgid "You are not allowed to perform this action."
 msgstr ""
 
 #. translators: %s: visitor name
-#: includes/class-captlc-pro-alerts.php:156
+#: includes/class-captlc-pro-alerts.php:158
 #, php-format
 msgid "New message from %s"
 msgstr ""
 
 #. translators: %d: number of additional conversations waiting
-#: includes/class-captlc-pro-alerts.php:158
+#: includes/class-captlc-pro-alerts.php:160
 #, php-format
 msgid "+%d more conversations waiting"
 msgstr ""
 
-#: includes/class-captlc-pro-alerts.php:159
+#: includes/class-captlc-pro-alerts.php:161
 msgid "Open chat"
 msgstr ""
 
-#: includes/class-captlc-pro-alerts.php:160
-#: src/page/ai_settings/ai_settings.jsx:823
+#: includes/class-captlc-pro-alerts.php:162
+#: build/index.js:4
 msgid "Dismiss"
 msgstr ""
 
-#: includes/class-captlc-pro-alerts.php:161
+#: includes/class-captlc-pro-alerts.php:163
 msgid "New chat messages"
 msgstr ""
 
@@ -258,491 +258,515 @@ msgstr ""
 msgid "The logo URL is too long."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:17
-#: src/page/alerts/alerts.jsx:14
-#: src/page/white_label/white_label.jsx:14
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:36
+msgid "Get AI Settings"
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:37
+msgid "Get AI auto-reply settings (provider API keys are masked)."
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:48
+msgid "Save AI Provider"
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:49
+msgid "Save the active AI provider and its API key."
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:69
+msgid "Test AI Provider"
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:70
+msgid "Test the currently configured AI provider connection."
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:81
+msgid "Save AI General Settings"
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:82
+msgid "Save general AI behaviour settings (tone, auto-reply on/off, escalation rules)."
+msgstr ""
+
+#: includes/mcp/abilities/class-captlc-mcp-tools-ai.php:102
+msgid "This ability is scaffolded but not yet implemented."
+msgstr ""
+
+#: build/index.js:1
 msgid "Your session expired. Please reload the page and try again."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:18
-#: src/page/alerts/alerts.jsx:15
-#: src/page/white_label/white_label.jsx:15
+#: build/index.js:1
 msgid "Unexpected response from the server."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:38
+#: build/index.js:1
 msgid "Free"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:47
+#: build/index.js:1
 msgid "Free tier"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:56
-#: src/page/ai_settings/ai_settings.jsx:65
+#: build/index.js:1
 msgid "Paid"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:74
+#: build/index.js:1
 msgid "Free models"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:143
+#: build/index.js:1
 msgid "Enabled"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:148
+#: build/index.js:1
 msgid "Disabled"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:174
-#: src/page/ai_settings/ai_settings.jsx:198
-msgid "Enter a valid model name."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:182
-msgid "✓ Saved"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:183
-msgid "Could not save"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:186
-msgid "Network error - not saved"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:206
-#: src/page/ai_settings/ai_settings.jsx:234
-#: src/page/ai_settings/ai_settings.jsx:239
+#: build/index.js:1
 msgid "Connected"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:207
-msgid "Connection failed"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:210
-#: src/page/ai_settings/ai_settings.jsx:224
-msgid "Network error"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:216
-msgid "Remove the saved API key for this provider?"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:222
-msgid "Key removed"
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:234
-#: src/page/ai_settings/ai_settings.jsx:239
+#: build/index.js:1
 msgid "Not connected"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:237
+#: build/index.js:1
 msgid "Active"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:239
+#: build/index.js:1
 msgid "Key unreadable"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:247
+#: build/index.js:1
 msgid "The saved key for this provider can no longer be read (the site security keys may have changed). Please enter the key again and save."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:252
+#: build/index.js:1
 msgid "API Key"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:258
+#: build/index.js:1
 msgid "Saved - enter a new key to replace it"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:267
+#: build/index.js:1
 msgid "Hide"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:267
+#: build/index.js:1
 msgid "Show"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:275
+#: build/index.js:1
 msgid "Model"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:290
+#: build/index.js:1
 msgid "Other (type a model name)…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:299
+#: build/index.js:1
 msgid "model-name"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:310
+#: build/index.js:1
+msgid "Model name"
+msgstr ""
+
+#: build/index.js:1
 msgid "Get free API key"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:326
+#: build/index.js:1
 msgid "Set as active"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:331
+#: build/index.js:1
+msgid "Remove the saved API key for this provider?"
+msgstr ""
+
+#: build/index.js:1
+msgid "Key removed"
+msgstr ""
+
+#: build/index.js:1
+msgid "Network error"
+msgstr ""
+
+#: build/index.js:1
 msgid "Remove key"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:335
+#: build/index.js:1
+msgid "Connection failed"
+msgstr ""
+
+#: build/index.js:1
+msgid "Enter a valid model name."
+msgstr ""
+
+#: build/index.js:1
 msgid "Testing…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:335
+#: build/index.js:1
 msgid "Test"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:338
-#: src/page/ai_settings/ai_settings.jsx:906
-#: src/page/white_label/white_label.jsx:155
+#: build/index.js:1
+msgid "✓ Saved"
+msgstr ""
+
+#: build/index.js:1
+msgid "Could not save"
+msgstr ""
+
+#: build/index.js:1
+msgid "Network error - not saved"
+msgstr ""
+
+#: build/index.js:1
+#: build/index.js:6
 msgid "Saving…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:338
+#: build/index.js:1
 msgid "Save"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:418
+#: build/index.js:1
 msgid "Close"
 msgstr ""
 
 #. translators: %s: number of characters extracted from this source.
-#: src/page/ai_settings/ai_settings.jsx:425
+#: build/index.js:2
 #, js-format
 msgid "%s characters, split into searchable chunks - for each visitor question the AI is sent only the most relevant chunks from this text."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:431
+#: build/index.js:2
 msgid "Only the first part of the text is shown here. The AI still searches the whole source."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:437
+#: build/index.js:2
 msgid "(No text was extracted from this source.)"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:458
+#: build/index.js:2
 msgid "Could not load the knowledge base."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:459
-#: src/page/ai_settings/ai_settings.jsx:477
-#: src/page/ai_settings/ai_settings.jsx:501
-#: src/page/ai_settings/ai_settings.jsx:538
-#: src/page/ai_settings/ai_settings.jsx:706
-#: src/page/ai_settings/ai_settings.jsx:777
-#: src/page/ai_settings/ai_settings.jsx:793
-#: src/page/alerts/alerts.jsx:68
+#: build/index.js:2
+#: build/index.js:3
+#: build/index.js:6
 msgid "Network error."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:474
+#: build/index.js:2
 msgid "Could not add this link."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:498
-msgid "Could not process this file."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:516
-msgid "Could not remove this source."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:521
-msgid "Network error - the source was not removed."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:535
-msgid "Could not refresh this link."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:545
+#: build/index.js:2
 msgid "Knowledge Base"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:547
+#: build/index.js:2
 msgid "Add documents or website links. The AI reads them and uses the content to answer visitor questions."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:550
+#: build/index.js:2
 msgid "Anything you add here can be repeated to visitors in AI answers, so do not add private or confidential material. Text-based PDFs and .txt files work best; PDFs with custom fonts (common for Hindi, Gujarati and other non-Latin text) and scanned PDFs cannot be read - use a .txt file for those."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:562
+#: build/index.js:2
 msgid "https://yoursite.com/faq"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:568
+#: build/index.js:2
 msgid "Adding…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:568
+#: build/index.js:2
 msgid "Add Link"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:571
+#: build/index.js:2
 msgid "or"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:589
+#: build/index.js:2
+msgid "Could not process this file."
+msgstr ""
+
+#: build/index.js:2
 msgid "Reading…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:589
+#: build/index.js:2
 msgid "Upload PDF / .txt"
 msgstr ""
 
 #. translators: %s: number of characters extracted from this source.
-#: src/page/ai_settings/ai_settings.jsx:610
+#: build/index.js:3
 #, js-format
 msgid "%s characters extracted"
 msgstr ""
 
 #. translators: %d: number of searchable chunks the source was split into.
-#: src/page/ai_settings/ai_settings.jsx:615
+#: build/index.js:3
 #, js-format
 msgid "%d searchable chunks"
 msgstr ""
 
 #. translators: %s: date/time this link was last fetched.
-#: src/page/ai_settings/ai_settings.jsx:619
+#: build/index.js:3
 #, js-format
 msgid "last fetched %s"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:624
+#: build/index.js:3
 msgid "Very little text was found - if this is a JavaScript-heavy site, the AI may only have seen an empty page."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:637
+#: build/index.js:3
+msgid "Could not refresh this link."
+msgstr ""
+
+#: build/index.js:3
 msgid "Re-fetch this link's current content"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:646
+#: build/index.js:3
 msgid "View full extracted text"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:650
+#: build/index.js:3
+msgid "Could not remove this source."
+msgstr ""
+
+#: build/index.js:3
+msgid "Network error - the source was not removed."
+msgstr ""
+
+#: build/index.js:3
 msgid "Remove"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:660
+#: build/index.js:3
 msgid "No sources added yet."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:704
+#: build/index.js:3
 msgid "Could not load AI settings."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:767
+#: build/index.js:3
 msgid "Active provider updated."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:769
+#: build/index.js:3
 msgid "Active provider updated, but it has no working key yet. Add a key or visitors will only get the offline message."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:773
+#: build/index.js:3
 msgid "Could not change the active provider."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:791
-msgid "Settings saved."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:792
-msgid "Save failed."
-msgstr ""
-
-#: src/page/ai_settings/ai_settings.jsx:797
+#: build/index.js:3
 msgid "Loading…"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:803
+#: build/index.js:3
 msgid "AI Auto-Reply"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:804
+#: build/index.js:3
 msgid "Answer visitors automatically when every agent is offline."
 msgstr ""
 
 #. translators: %s: the AI provider's error message
-#: src/page/ai_settings/ai_settings.jsx:816
+#: build/index.js:4
 #, js-format
 msgid "AI auto-reply failed recently: %s - visitors got the offline-message fallback instead. Check your API key and provider status."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:831
+#: build/index.js:4
 msgid "Enable AI auto-reply when all agents are offline"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:840
+#: build/index.js:4
 msgid "AI Auto-Reply is currently inactive"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:847
+#: build/index.js:4
 msgid "Optional - add extra instructions specific to your business (tone, topics to focus on, what to avoid). A baseline persona is already applied automatically, so the assistant never claims to be ChatGPT/another AI provider and won't reply with everything as a giant table."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:848
+#: build/index.js:4
 msgid "System Prompt"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:854
+#: build/index.js:4
 msgid "e.g. Focus on pricing and shipping questions. Recommend booking a call for anything about custom orders."
 msgstr ""
 
 #. translators: %d: characters used of the 4000 limit
-#: src/page/ai_settings/ai_settings.jsx:859
+#: build/index.js:5
 #, js-format
 msgid "%d / 4000 characters. This text is sent with every visitor message, so keep it focused."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:864
+#: build/index.js:5
 msgid "Set a number to cap how many AI replies go out per day (protects against a traffic spike or bots running up your API bill). Once reached, visitors get the offline-message fallback until it resets at midnight. 0 means unlimited, which is not recommended on a public website."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:865
+#: build/index.js:5
 msgid "Daily reply limit"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:878
+#: build/index.js:5
 msgid "Unlimited: every visitor message can cost you API money. A limit such as 200 per day is safer."
 msgstr ""
 
 #. translators: 1: replies sent today, 2: configured daily limit
-#: src/page/ai_settings/ai_settings.jsx:885
+#: build/index.js:6
 #, js-format
 msgid "Sent %1$d of %2$d today."
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:906
+#: build/index.js:6
+msgid "Settings saved."
+msgstr ""
+
+#: build/index.js:6
+msgid "Save failed."
+msgstr ""
+
+#: build/index.js:6
 msgid "Save Settings"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:914
+#: build/index.js:6
 msgid "Providers"
 msgstr ""
 
-#: src/page/ai_settings/ai_settings.jsx:915
+#: build/index.js:6
 msgid "Click a provider to add its key. Groq and Gemini are free, no card needed."
 msgstr ""
 
-#: src/page/alerts/alerts.jsx:65
-msgid "Could not load your alert settings."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:83
-msgid "Saved. Applies from the next page you open."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:86
-msgid "Could not save."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:91
-msgid "Network error - not saved."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:100
-msgid "Pop-up alerts for new messages"
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:101
-msgid "Pro"
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:104
-msgid "See a pop-up on any WordPress admin page the moment a visitor writes. This only affects you, not other agents."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:110
-msgid "Show pop-up alerts"
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:111
-msgid "A small pop-up with the visitor name and message, with a button to open the chat."
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:119
-msgid "Play a short sound"
-msgstr ""
-
-#: src/page/alerts/alerts.jsx:120
-msgid "Browsers only allow sound after you have clicked somewhere on the page."
-msgstr ""
-
-#: src/page/white_label/white_label.jsx:41
+#: build/index.js:6
 msgid "Select or Upload Logo"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:42
+#: build/index.js:6
 msgid "Use this logo"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:54
+#: build/index.js:6
 msgid "Enter logo image URL:"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:96
+#: build/index.js:6
 msgid "White Label"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:97
+#: build/index.js:6
 msgid "Replace the \"Captain Live Chat\" name and logo with your own agency branding, everywhere in this admin."
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:102
+#: build/index.js:6
 msgid "Custom Plugin Name"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:106
+#: build/index.js:6
 msgid "e.g. Acme Agency Chat"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:112
+#: build/index.js:6
 msgid "Shown in the WordPress admin menu and the plugin sidebar. Leave blank to keep the default name."
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:117
+#: build/index.js:6
 msgid "Custom Logo"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:123
+#: build/index.js:6
 msgid "Click to change"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:129
+#: build/index.js:6
 msgid "Browse Media Library"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:133
+#: build/index.js:6
 msgid "Remove logo"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:146
+#: build/index.js:6
 msgid "Recommended: a square SVG or PNG icon. Leave blank to keep the default logo."
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:152
+#: build/index.js:6
 msgid "Reset to Default"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:155
+#: build/index.js:6
 msgid "Save Branding"
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:159
+#: build/index.js:6
 msgid "Saved - reload the page to see it everywhere."
 msgstr ""
 
-#: src/page/white_label/white_label.jsx:160
+#: build/index.js:6
 msgid "Could not save. Please try again."
+msgstr ""
+
+#: build/index.js:6
+msgid "Could not load your alert settings."
+msgstr ""
+
+#: build/index.js:6
+msgid "Saved. Applies from the next page you open."
+msgstr ""
+
+#: build/index.js:6
+msgid "Could not save."
+msgstr ""
+
+#: build/index.js:6
+msgid "Network error - not saved."
+msgstr ""
+
+#: build/index.js:6
+msgid "Pop-up alerts for new messages"
+msgstr ""
+
+#: build/index.js:6
+msgid "Pro"
+msgstr ""
+
+#: build/index.js:6
+msgid "See a pop-up on any WordPress admin page the moment a visitor writes. This only affects you, not other agents."
+msgstr ""
+
+#: build/index.js:6
+msgid "Show pop-up alerts"
+msgstr ""
+
+#: build/index.js:6
+msgid "A small pop-up with the visitor name and message, with a button to open the chat."
+msgstr ""
+
+#: build/index.js:6
+msgid "Play a short sound"
+msgstr ""
+
+#: build/index.js:6
+msgid "Browsers only allow sound after you have clicked somewhere on the page."
 msgstr ""

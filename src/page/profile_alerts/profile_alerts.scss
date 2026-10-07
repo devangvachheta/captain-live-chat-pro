@@ -1,0 +1,108 @@
+@use '/src/style/variables.scss' as *;
+
+// Pop-up alerts card on the free plugin's Profile page. Colours come from the
+// free plugin's theme tokens, so light and dark mode both work.
+.captlc-pro-alerts {
+	margin-top: 16px;
+	gap: 14px;
+}
+
+.captlc-pro-alerts__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	cursor: pointer;
+}
+
+.captlc-pro-alerts__text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.captlc-pro-alerts__label {
+	color: $black_color;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.captlc-pro-alerts__hint {
+	color: $desc_color;
+	font-size: 12px;
+}
+
+// Element + attribute in the selector so WordPress core's
+// input[type="checkbox"] styles (forms.css) cannot override the switch.
+input.captlc-pro-alerts__switch[type="checkbox"] {
+	position: relative;
+	flex: none;
+	width: 40px;
+	height: 22px;
+	margin: 0;
+	border: 0;
+	border-radius: 999px;
+	background: var(--captlc-toggle-bg);
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+	transition: background 0.15s ease;
+
+	// WordPress draws its own tick mark here.
+	&::before,
+	&:checked::before {
+		content: none;
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset-block-start: 2px;
+		inset-inline-start: 2px;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		background: var(--captlc-toggle-knob);
+		transition: inset-inline-start 0.15s ease;
+	}
+
+	&:checked {
+		background: var(--captlc-primary);
+	}
+
+	&:checked::after {
+		inset-inline-start: 20px;
+	}
+
+	&:focus-visible {
+		outline: 2px solid transparent; // Still visible in Windows high-contrast mode.
+		box-shadow: var(--captlc-focus-ring);
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
+	}
+}
+
+.captlc-pro-alerts__status {
+	min-height: 18px;
+	margin: 0;
+	font-size: 12px;
+
+	&.is-ok {
+		color: var(--captlc-success-text);
+	}
+
+	&.is-error {
+		color: var(--captlc-error-text);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	input.captlc-pro-alerts__switch[type="checkbox"],
+	input.captlc-pro-alerts__switch[type="checkbox"]::after {
+		transition: none;
+	}
+}

@@ -1,7 +1,7 @@
 {
   "name": "captain-live-chat-pro",
-  "version": "1.0.2",
-  "description": "Captain Live Chat Pro — automatic AI replies when no agent is online.",
+  "version": "1.0.0",
+  "description": "Captain Live Chat Pro - automatic AI replies when no agent is online.",
   "main": "index.js",
   "scripts": {
     "build": "wp-scripts build",

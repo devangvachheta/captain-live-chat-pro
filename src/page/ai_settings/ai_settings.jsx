@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ai_settings.scss';
 import { __, sprintf } from '@wordpress/i18n';
-
-const ajax = ( action, data = {} ) => {
-	const body = new URLSearchParams( { action, nonce: captlc_data.nonce, ...data } );
-	return fetch( captlc_data.ajax_url, {
-		method: 'POST', credentials: 'same-origin',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: body.toString(),
-	} ).then( ( r ) => r.json() );
-};
+import ajax, { parseResponse } from '../../utils/ajax.js';
 
 // ── Provider definitions ──────────────────────────────────────────────────
 const PROVIDERS = [
@@ -28,7 +20,7 @@ const PROVIDERS = [
 		badge:       __( 'Free tier', 'captain-live-chat-pro' ),
 		badgeType:   'free',
 		placeholder: 'AIza...',
-		models:      [ 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro' ],
+		models:      [ 'gemini-3.5-flash', 'gemini-3.1-flash-lite' ],
 		freeLink:    'https://aistudio.google.com/app/apikey',
 	},
 	{
@@ -37,7 +29,7 @@ const PROVIDERS = [
 		badge:       __( 'Paid', 'captain-live-chat-pro' ),
 		badgeType:   'paid',
 		placeholder: 'sk-...',
-		models:      [ 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo' ],
+		models:      [ 'gpt-4o-mini', 'gpt-5.4-mini', 'gpt-5.5' ],
 		freeLink:    'https://platform.openai.com/api-keys',
 	},
 	{
@@ -46,7 +38,7 @@ const PROVIDERS = [
 		badge:       __( 'Paid', 'captain-live-chat-pro' ),
 		badgeType:   'paid',
 		placeholder: 'sk-ant-...',
-		models:      [ 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-opus-4-6' ],
+		models:      [ 'claude-haiku-4-5-20251001', 'claude-sonnet-5-5', 'claude-opus-5-5' ],
 		freeLink:    'https://console.anthropic.com/settings/keys',
 	},
 	{
@@ -59,6 +51,25 @@ const PROVIDERS = [
 		freeLink:    'https://openrouter.ai/keys',
 	},
 ];
+
+// Models the providers have shut down. A saved one is swapped for the
+// provider's first listed model instead of being kept as a "custom" name.
+const RETIRED_MODELS = [
+	'gemini-2.0-flash',
+	'gemini-2.0-flash-001',
+	'gemini-1.5-flash',
+	'gemini-1.5-pro',
+	'gemini-1.5-flash-8b',
+	'gpt-4-turbo',
+	'claude-sonnet-4-6',
+	'claude-opus-4-6',
+];
+
+// <select> value for "type your own model name".
+const CUSTOM_MODEL = '__custom__';
+
+// Same rule as CAPTLC_AI::is_valid_model() on the server.
+const MODEL_PATTERN = /^[A-Za-z0-9._:/-]{1,100}$/;
 
 const EyeIcon = ( { off } ) => off ? (
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
@@ -120,26 +131,29 @@ const SegmentedToggle = ( { checked, onChange } ) => (
 );
 
 // ── Single provider row (collapsed header + expandable body) ─────────────
-const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConnected, isActive, expanded, onToggle, onSetActive, onSave, onTest, onRemove } ) => {
+const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConnected, isUnreadable, isActive, expanded, onToggle, onSetActive, onSave, onTest, onRemove } ) => {
 	const [ key, setKey ]               = useState( savedKey || '' );
-	// Guard against a stale/removed model saved before the model list changed
-	// (e.g. Groq retiring `llama-3.3-70b-versatile`) - otherwise the <select>
-	// visually shows its first option while still holding the invalid value
-	// in state, and that invalid value gets sent to Test/Save.
-	const [ model, setModel ]           = useState(
-		savedModel && provider.models.includes( savedModel ) ? savedModel : provider.models[ 0 ]
-	);
+	// A retired model falls back to the first listed one; any other saved
+	// model that is not in the list is a custom model name the admin typed.
+	const initialModel                  = savedModel && ! RETIRED_MODELS.includes( savedModel ) ? savedModel : provider.models[ 0 ];
+	const [ model, setModel ]           = useState( initialModel );
+	const [ customModel, setCustomModel ] = useState( ! provider.models.includes( initialModel ) );
 	const [ show, setShow ]             = useState( false );
 	const [ saving, setSaving ]         = useState( false );
 	const [ testing, setTesting ]       = useState( false );
 	const [ testResult, setTestResult ] = useState( null );
 	const [ saveResult, setSaveResult ] = useState( null );
+	const modelValid                    = MODEL_PATTERN.test( model.trim() );
 
 	const handleSave = ( e ) => {
 		e.stopPropagation();
+		if ( ! modelValid ) {
+			setSaveResult( { ok: false, msg: __( 'Enter a valid model name.', 'captain-live-chat-pro' ) } );
+			return;
+		}
 		setSaving( true );
 		setSaveResult( null );
-		onSave( provider.id, key.trim(), model )
+		onSave( provider.id, key.trim(), model.trim() )
 			.then( ( res ) => {
 				setSaveResult( res?.success
 					? { ok: true, msg: __( '✓ Saved', 'captain-live-chat-pro' ) }
@@ -155,10 +169,15 @@ const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConne
 
 	const handleTest = ( e ) => {
 		e.stopPropagation();
-		if ( ! key.trim() ) return;
+		// With no key typed in, the server tests the key that is already saved.
+		if ( ! key.trim() && ! isConnected ) return;
+		if ( ! modelValid ) {
+			setTestResult( { ok: false, msg: __( 'Enter a valid model name.', 'captain-live-chat-pro' ) } );
+			return;
+		}
 		setTesting( true );
 		setTestResult( null );
-		onTest( provider.id, key.trim(), model )
+		onTest( provider.id, key.trim(), model.trim() )
 			.then( ( res ) => {
 				setTestResult( res?.success
 					? { ok: true,  msg: __( 'Connected', 'captain-live-chat-pro' ) }
@@ -194,12 +213,21 @@ const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConne
 				<span className={ `captlc-ai-row__badge captlc-ai-row__badge--${ provider.badgeType }` }>{ provider.badge }</span>
 				{ isActive && <span className="captlc-ai-row__active-tag">{ __( 'Active', 'captain-live-chat-pro' ) }</span> }
 				<span className="captlc-ai-row__spacer" />
-				<span className="captlc-ai-row__status">{ isConnected ? __( 'Connected', 'captain-live-chat-pro' ) : __( 'Not connected', 'captain-live-chat-pro' ) }</span>
+				<span className="captlc-ai-row__status">
+					{ isUnreadable
+						? __( 'Key unreadable', 'captain-live-chat-pro' )
+						: ( isConnected ? __( 'Connected', 'captain-live-chat-pro' ) : __( 'Not connected', 'captain-live-chat-pro' ) ) }
+				</span>
 				<ChevronIcon open={ expanded } />
 			</button>
 
 			{ expanded && (
 				<div className="captlc-ai-row__body">
+					{ isUnreadable && (
+						<div className="captlc-notice captlc-notice--error" role="alert">
+							{ __( 'The saved key for this provider can no longer be read (the site security keys may have changed). Please enter the key again and save.', 'captain-live-chat-pro' ) }
+						</div>
+					) }
 					<div className="captlc-ai-row__field-grid">
 						<div className="captlc-ai-row__field">
 							<label className="captlc-field__label" htmlFor={ `captlc-ai-key-${ provider.id }` }>{ __( 'API Key', 'captain-live-chat-pro' ) }</label>
@@ -226,9 +254,34 @@ const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConne
 
 						<div className="captlc-ai-row__field captlc-ai-row__field--model">
 							<label className="captlc-field__label" htmlFor={ `captlc-ai-model-${ provider.id }` }>{ __( 'Model', 'captain-live-chat-pro' ) }</label>
-							<select id={ `captlc-ai-model-${ provider.id }` } className="captlc-select" value={ model } onChange={ ( e ) => setModel( e.target.value ) }>
+							<select
+								id={ `captlc-ai-model-${ provider.id }` }
+								className="captlc-select"
+								value={ customModel ? CUSTOM_MODEL : model }
+								onChange={ ( e ) => {
+									if ( CUSTOM_MODEL === e.target.value ) {
+										setCustomModel( true );
+									} else {
+										setCustomModel( false );
+										setModel( e.target.value );
+									}
+								} }
+							>
 								{ provider.models.map( ( m ) => <option key={ m } value={ m }>{ m }</option> ) }
+								<option value={ CUSTOM_MODEL }>{ __( 'Other (type a model name)…', 'captain-live-chat-pro' ) }</option>
 							</select>
+							{ customModel && (
+								<input
+									type="text"
+									className="captlc-input-field captlc-ai-row__custom-model"
+									value={ model }
+									maxLength={ 100 }
+									placeholder={ __( 'model-name', 'captain-live-chat-pro' ) }
+									aria-label={ __( 'Model name', 'captain-live-chat-pro' ) }
+									aria-invalid={ ! modelValid }
+									onChange={ ( e ) => setModel( e.target.value ) }
+								/>
+							) }
 						</div>
 					</div>
 
@@ -259,7 +312,7 @@ const ProviderRow = ( { provider, savedKey, savedKeyPreview, savedModel, isConne
 									{ __( 'Remove key', 'captain-live-chat-pro' ) }
 								</button>
 							) }
-							<button type="button" className="captlc-secondary-button captlc-ai-row__small-btn" onClick={ handleTest } disabled={ testing || ! key.trim() }>
+							<button type="button" className="captlc-secondary-button captlc-ai-row__small-btn" onClick={ handleTest } disabled={ testing || ( ! key.trim() && ! isConnected ) }>
 								{ testing ? __( 'Testing…', 'captain-live-chat-pro' ) : __( 'Test', 'captain-live-chat-pro' ) }
 							</button>
 							<button type="button" className="captlc-primary-button captlc-ai-row__small-btn" onClick={ handleSave } disabled={ saving }>
@@ -354,6 +407,11 @@ const KnowledgeTextModal = ( { entry, onClose } ) => (
 					entry.char_count.toLocaleString()
 				) }
 			</div>
+			{ entry.content_truncated && (
+				<div className="captlc-ai-kb-modal__meta">
+					{ __( 'Only the first part of the text is shown here. The AI still searches the whole source.', 'captain-live-chat-pro' ) }
+				</div>
+			) }
 			<div className="captlc-ai-kb-modal__body">
 				{ entry.content
 					? entry.content
@@ -375,13 +433,18 @@ const KnowledgeBaseSection = () => {
 	const [ refreshError, setRefreshError ] = useState( { id: '', message: '' } );
 	const fileInputRef = useRef( null );
 
-	const loadEntries = () => {
-		ajax( 'captlc_get_knowledge' ).then( ( res ) => {
-			if ( res?.success ) setEntries( res.data.entries || [] );
-		} ).catch( () => {} ).finally( () => setLoading( false ) );
-	};
-
-	useEffect( () => { loadEntries(); }, [] );
+	useEffect( () => {
+		ajax( 'captlc_get_knowledge' )
+			.then( ( res ) => {
+				if ( res?.success ) {
+					setEntries( res.data.entries || [] );
+				} else {
+					setError( res?.data?.message || __( 'Could not load the knowledge base.', 'captain-live-chat-pro' ) );
+				}
+			} )
+			.catch( () => setError( __( 'Network error.', 'captain-live-chat-pro' ) ) )
+			.finally( () => setLoading( false ) );
+	}, [] );
 
 	const handleAddUrl = () => {
 		if ( ! urlInput.trim() || addingUrl ) return;
@@ -412,7 +475,7 @@ const KnowledgeBaseSection = () => {
 		body.append( 'captlc_knowledge_file', file );
 
 		fetch( captlc_data.ajax_url, { method: 'POST', credentials: 'same-origin', body } )
-			.then( ( r ) => r.json() )
+			.then( parseResponse )
 			.then( ( res ) => {
 				if ( res?.success ) {
 					setEntries( ( prev ) => [ ...prev, res.data.entry ] );
@@ -428,8 +491,20 @@ const KnowledgeBaseSection = () => {
 	};
 
 	const handleDelete = ( id ) => {
+		const previous = entries;
+		setError( '' );
 		setEntries( ( prev ) => prev.filter( ( e ) => e.id !== id ) );
-		ajax( 'captlc_delete_knowledge', { id } ).catch( () => {} );
+		ajax( 'captlc_delete_knowledge', { id } )
+			.then( ( res ) => {
+				if ( ! res?.success ) {
+					setEntries( previous );
+					setError( res?.data?.message || __( 'Could not remove this source.', 'captain-live-chat-pro' ) );
+				}
+			} )
+			.catch( () => {
+				setEntries( previous );
+				setError( __( 'Network error - the source was not removed.', 'captain-live-chat-pro' ) );
+			} );
 	};
 
 	const handleRefresh = ( id ) => {
@@ -455,6 +530,9 @@ const KnowledgeBaseSection = () => {
 				<h3 className="captlc-ai-kb-section__title">{ __( 'Knowledge Base', 'captain-live-chat-pro' ) }</h3>
 				<p className="captlc-card__desc">
 					{ __( 'Add documents or website links. The AI reads them and uses the content to answer visitor questions.', 'captain-live-chat-pro' ) }
+				</p>
+				<p className="captlc-field__hint">
+					{ __( 'Anything you add here can be repeated to visitors in AI answers, so do not add private or confidential material. Text-based PDFs and .txt files work best; PDFs with custom fonts (common for Hindi, Gujarati and other non-Latin text) and scanned PDFs cannot be read - use a .txt file for those.', 'captain-live-chat-pro' ) }
 				</p>
 			</div>
 
@@ -580,7 +658,12 @@ const AiSettings = () => {
 	const [ autoReply, setAutoReply ]           = useState( false );
 	const [ activeProvider, setActiveProvider ] = useState( 'groq' );
 	const [ systemPrompt, setSystemPrompt ]     = useState( '' );
-	const [ dailyLimit, setDailyLimit ]         = useState( 0 );
+	// Matches CAPTLC_AI::DEFAULT_DAILY_LIMIT: a public widget calling a paid
+	// API should never default to unlimited.
+	const [ dailyLimit, setDailyLimit ]         = useState( 200 );
+	// Last saved general settings. "Set as active" re-sends these, not
+	// unsaved edits that are still in the form.
+	const savedGeneral                          = useRef( { autoReply: false, systemPrompt: '', dailyLimit: 200 } );
 	const [ usageToday, setUsageToday ]         = useState( 0 );
 	const [ lastError, setLastError ]           = useState( null );
 	const [ loading, setLoading ]               = useState( true );
@@ -591,16 +674,26 @@ const AiSettings = () => {
 	useEffect( () => {
 		ajax( 'captlc_get_ai_settings' ).then( ( res ) => {
 			if ( res?.success ) {
+				const limit = typeof res.data.daily_limit === 'number' ? res.data.daily_limit : 200;
+
 				setProviderData( res.data.providers || {} );
 				setAutoReply( !! res.data.auto_reply_enabled );
 				setActiveProvider( res.data.active_provider || 'groq' );
 				setSystemPrompt( res.data.system_prompt || '' );
-				setDailyLimit( res.data.daily_limit || 0 );
+				setDailyLimit( limit );
+				savedGeneral.current = {
+					autoReply: !! res.data.auto_reply_enabled,
+					systemPrompt: res.data.system_prompt || '',
+					dailyLimit: limit,
+				};
 				setUsageToday( res.data.usage_today || 0 );
 				setLastError( res.data.last_error || null );
 				setExpandedId( res.data.active_provider || 'groq' );
+			} else {
+				setNotice( { msg: res?.data?.message || __( 'Could not load AI settings.', 'captain-live-chat-pro' ), type: 'error' } );
 			}
-		} ).catch( () => {} ).finally( () => setLoading( false ) );
+		} ).catch( () => setNotice( { msg: __( 'Network error.', 'captain-live-chat-pro' ), type: 'error' } ) )
+			.finally( () => setLoading( false ) );
 	}, [] );
 
 	const showNotice = ( msg, type = 'success' ) => {
@@ -620,8 +713,9 @@ const AiSettings = () => {
 						...prev,
 						[ providerId ]: {
 							model,
-							connected:   !! res.data?.connected,
-							key_preview: res.data?.key_preview || '',
+							connected:      !! res.data?.connected,
+							key_preview:    res.data?.key_preview || '',
+							key_unreadable: false,
 						},
 					} ) );
 				}
@@ -635,7 +729,7 @@ const AiSettings = () => {
 				if ( res?.success ) {
 					setProviderData( ( prev ) => ( {
 						...prev,
-						[ providerId ]: { model: '', connected: false, key_preview: '' },
+						[ providerId ]: { model: '', connected: false, key_preview: '', key_unreadable: false },
 					} ) );
 				}
 				return res;
@@ -647,14 +741,25 @@ const AiSettings = () => {
 	};
 
 	const handleSetActive = ( providerId ) => {
+		const previous = activeProvider;
 		setActiveProvider( providerId );
 		ajax( 'captlc_save_ai_general', {
-			auto_reply_enabled: autoReply ? '1' : '0',
+			auto_reply_enabled: savedGeneral.current.autoReply ? '1' : '0',
 			active_provider:    providerId,
-			system_prompt:      systemPrompt,
-			daily_limit:        dailyLimit,
+			system_prompt:      savedGeneral.current.systemPrompt,
+			daily_limit:        savedGeneral.current.dailyLimit,
 		} ).then( ( res ) => {
-			if ( res?.success ) showNotice( __( 'Active provider updated.', 'captain-live-chat-pro' ) );
+			if ( ! res?.success ) {
+				setActiveProvider( previous );
+				showNotice( res?.data?.message || __( 'Could not change the active provider.', 'captain-live-chat-pro' ), 'error' );
+			} else if ( providerData[ providerId ]?.connected ) {
+				showNotice( __( 'Active provider updated.', 'captain-live-chat-pro' ) );
+			} else {
+				showNotice( __( 'Active provider updated, but it has no working key yet. Add a key or visitors will only get the offline message.', 'captain-live-chat-pro' ), 'error' );
+			}
+		} ).catch( () => {
+			setActiveProvider( previous );
+			showNotice( __( 'Network error.', 'captain-live-chat-pro' ), 'error' );
 		} );
 	};
 
@@ -666,8 +771,10 @@ const AiSettings = () => {
 			system_prompt:      systemPrompt,
 			daily_limit:        dailyLimit,
 		} ).then( ( res ) => {
-			if ( res?.success ) showNotice( __( 'Settings saved.', 'captain-live-chat-pro' ) );
-			else showNotice( res?.data?.message || __( 'Save failed.', 'captain-live-chat-pro' ), 'error' );
+			if ( res?.success ) {
+				savedGeneral.current = { autoReply, systemPrompt, dailyLimit };
+				showNotice( __( 'Settings saved.', 'captain-live-chat-pro' ) );
+			} else showNotice( res?.data?.message || __( 'Save failed.', 'captain-live-chat-pro' ), 'error' );
 		} ).catch( () => showNotice( __( 'Network error.', 'captain-live-chat-pro' ), 'error' ) )
 		.finally( () => setSavingGeneral( false ) );
 	};
@@ -731,13 +838,21 @@ const AiSettings = () => {
 								rows="3"
 								placeholder={ __( 'e.g. Focus on pricing and shipping questions. Recommend booking a call for anything about custom orders.', 'captain-live-chat-pro' ) }
 								value={ systemPrompt }
+								maxLength={ 4000 }
 								onChange={ ( e ) => setSystemPrompt( e.target.value ) }
 							/>
+							<p className="captlc-field__hint">
+								{ sprintf(
+									/* translators: %d: characters used of the 4000 limit */
+									__( '%d / 4000 characters. This text is sent with every visitor message, so keep it focused.', 'captain-live-chat-pro' ),
+									systemPrompt.length
+								) }
+							</p>
 						</div>
 
 						<div className="captlc-field captlc-ai-general__limit-field">
 							<div className="captlc-ai-general__limit-row">
-								<LabelWithInfo htmlFor="captlc-ai-daily-limit" tip={ __( 'Set a number to cap how many AI replies go out per day (protects against a traffic spike or bots running up your API bill). Once reached, visitors get the offline-message fallback until it resets at midnight. Leave at 0 for unlimited.', 'captain-live-chat-pro' ) }>
+								<LabelWithInfo htmlFor="captlc-ai-daily-limit" tip={ __( 'Set a number to cap how many AI replies go out per day (protects against a traffic spike or bots running up your API bill). Once reached, visitors get the offline-message fallback until it resets at midnight. 0 means unlimited, which is not recommended on a public website.', 'captain-live-chat-pro' ) }>
 									{ __( 'Daily reply limit', 'captain-live-chat-pro' ) }
 								</LabelWithInfo>
 								<input
@@ -749,6 +864,11 @@ const AiSettings = () => {
 									onChange={ ( e ) => setDailyLimit( Math.max( 0, parseInt( e.target.value, 10 ) || 0 ) ) }
 								/>
 							</div>
+							{ 0 === Number( dailyLimit ) && (
+								<p className="captlc-field__hint captlc-ai-general__limit-hint" role="alert">
+									{ __( 'Unlimited: every visitor message can cost you API money. A limit such as 200 per day is safer.', 'captain-live-chat-pro' ) }
+								</p>
+							) }
 							{ Number( dailyLimit ) > 0 && (
 								<p className="captlc-field__hint captlc-ai-general__limit-hint">
 									{ sprintf(
@@ -797,6 +917,7 @@ const AiSettings = () => {
 								savedKeyPreview={ saved.key_preview || '' }
 								savedModel={ saved.model || provider.models[ 0 ] }
 								isConnected={ !! saved.connected }
+								isUnreadable={ !! saved.key_unreadable }
 								isActive={ activeProvider === provider.id }
 								expanded={ expandedId === provider.id }
 								onToggle={ () => setExpandedId( ( id ) => id === provider.id ? null : provider.id ) }

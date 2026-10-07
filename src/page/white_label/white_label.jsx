@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import './white_label.scss';
 import { __ } from '@wordpress/i18n';
-
-const ajax = ( action, data = {} ) => {
-	const body = new URLSearchParams( { action, nonce: captlc_data.nonce, ...data } );
-	return fetch( captlc_data.ajax_url, {
-		method: 'POST', credentials: 'same-origin',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: body.toString(),
-	} ).then( ( r ) => r.json() );
-};
+import ajax from '../../utils/ajax.js';
 
 const WhiteLabelSettings = () => {
 	const initial = ( typeof captlc_data !== 'undefined' && captlc_data?.white_label ) || {};

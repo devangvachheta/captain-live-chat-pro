@@ -54,12 +54,14 @@ class CAPTLC_Pro_Admin {
 
 		$asset = require $asset_file;
 
+		// Versioned by file time, so the new stylesheet is fetched after every build.
 		wp_enqueue_style(
 			'captlc-pro-css',
 			CAPTLC_PRO_URL . 'build/index.css',
 			array(),
-			CAPTLC_PRO_VERSION
+			CAPTLC_PRO_VERSION . '.' . filemtime( CAPTLC_PRO_PATH . 'build/index.css' )
 		);
+		wp_style_add_data( 'captlc-pro-css', 'rtl', 'replace' );
 
 		wp_enqueue_script(
 			'captlc-pro-script',
