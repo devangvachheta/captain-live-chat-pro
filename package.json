@@ -1,0 +1,20 @@
+{
+  "name": "captain-live-chat-pro",
+  "version": "1.0.2",
+  "description": "Captain Live Chat Pro — automatic AI replies when no agent is online.",
+  "main": "index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "author": "devangvachheta",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^32.4.0"
+  },
+  "dependencies": {
+    "@wordpress/i18n": "^6.21.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

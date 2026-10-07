@@ -1,0 +1,106 @@
+/* Captain Live Chat Pro - new message pop-ups (shown on any admin page). */
+.captlc-alerts {
+	position: fixed;
+	inset-block-end: 24px;
+	inset-inline-end: 24px;
+	z-index: 100010;
+	display: flex;
+	flex-direction: column-reverse;
+	gap: 10px;
+	width: min(340px, calc(100vw - 32px));
+	pointer-events: none;
+}
+
+.captlc-alert {
+	pointer-events: auto;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 12px 14px;
+	background: #fff;
+	color: #1d2327;
+	border: 1px solid #dcdcde;
+	border-inline-start: 4px solid #6366f1;
+	border-radius: 10px;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+	animation: captlc-alert-in 0.22s ease-out;
+}
+
+.captlc-alert__body {
+	flex: 1;
+	min-width: 0;
+}
+
+.captlc-alert__title {
+	margin: 0 0 2px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.captlc-alert__text {
+	margin: 0 0 8px;
+	font-size: 13px;
+	line-height: 1.45;
+	color: #50575e;
+	overflow-wrap: anywhere;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.captlc-alert__open {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 6px;
+	background: #6366f1;
+	color: #fff !important;
+	font-size: 12px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.captlc-alert__open:hover,
+.captlc-alert__open:focus {
+	background: #4f46e5;
+	color: #fff;
+}
+
+.captlc-alert__close {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: #646970;
+	font-size: 18px;
+	line-height: 24px;
+	cursor: pointer;
+}
+
+.captlc-alert__close:hover,
+.captlc-alert__close:focus {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+@keyframes captlc-alert-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.captlc-alert {
+		animation: none;
+	}
+}
