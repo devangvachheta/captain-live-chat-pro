@@ -93,6 +93,7 @@ In your WordPress database, encrypted. They are never sent to the browser after 
 * Improved : System Prompt : Limited to 4000 characters, with a live character counter.
 * Improved : Active Provider : "Set as active" warns when the chosen provider has no working key yet, and only re-sends your saved settings (not unsaved edits).
 * Improved : Knowledge Base : Shows an error when loading or removing a source fails, notes when a preview only shows the first part of a long source, and reminds you not to add private material.
+* Improved : Transcript Labels : Exported transcripts show the automatic offline reply as "Automatic reply", separate from AI answers.
 * Improved : RTL and Dark Mode : Right-to-left (RTL) stylesheet support, and colours that follow the dashboard's light and dark theme.
 * Security : Daily Limit Warning : A warning is shown when the daily reply limit is set to unlimited, since every visitor message can cost API money.
 * Security : Unreadable Keys : A clear "Key unreadable" notice when a saved key can no longer be decrypted (for example after the site security keys changed).

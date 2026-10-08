@@ -240,7 +240,8 @@ class CAPTLC_Pro_Export {
 					$sender = 'System';
 				} else {
 					// The messages table stores only the agent's user id; look the
-					// name up. No id means the AI agent (or a bot) wrote it.
+					// name up. No id means the AI agent wrote it; id 0 is the automatic
+					// offline reply.
 					$sender = 'Agent';
 
 					if ( ! empty( $msg->sender_id ) ) {
@@ -250,8 +251,11 @@ class CAPTLC_Pro_Export {
 						}
 
 						$sender = $agent_names[ (int) $msg->sender_id ];
-					} else {
+					} elseif ( null === $msg->sender_id ) {
 						$sender = 'AI Agent';
+					} else {
+						// sender_id 0: the automatic offline reply.
+						$sender = 'Automatic reply';
 					}
 				}
 
