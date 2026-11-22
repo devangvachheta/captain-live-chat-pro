@@ -410,6 +410,22 @@ class CAPTLC_AI {
 			$provider = 'groq';
 		}
 
+		// Fast-fail before loading KB or building prompt: verify provider key is present and decryptable.
+		if ( empty( $stored[ $provider ]['encrypted_key'] ) ) {
+			$error = new WP_Error( 'no_key', __( 'No API key configured.', 'captain-live-chat-pro' ) );
+			self::record_last_error( $error->get_error_message() );
+			return $error;
+		}
+
+		$key   = self::decrypt( $stored[ $provider ]['encrypted_key'] );
+		$model = isset( $stored[ $provider ]['model'] ) ? $stored[ $provider ]['model'] : '';
+
+		if ( ! $key ) {
+			$error = new WP_Error( 'key_unreadable', __( 'The saved API key cannot be read (the site security keys may have changed). Please enter the key again.', 'captain-live-chat-pro' ) );
+			self::record_last_error( $error->get_error_message() );
+			return $error;
+		}
+
 		if ( $daily_limit > 0 && self::get_usage_today() >= $daily_limit ) {
 			$error = new WP_Error( 'daily_limit', __( 'Daily AI reply limit reached.', 'captain-live-chat-pro' ) );
 			self::record_last_error( $error->get_error_message() );
@@ -426,27 +442,15 @@ class CAPTLC_AI {
 
 		$prompt = self::build_system_prompt( $custom_prompt, self::build_retrieval_query( $thread_id, $visitor_message ) );
 
-		if ( empty( $stored[ $provider ]['encrypted_key'] ) ) {
-			$error = new WP_Error( 'no_key', __( 'No API key configured.', 'captain-live-chat-pro' ) );
-			self::record_last_error( $error->get_error_message() );
-			return $error;
-		}
-
-		$key   = self::decrypt( $stored[ $provider ]['encrypted_key'] );
-		$model = isset( $stored[ $provider ]['model'] ) ? $stored[ $provider ]['model'] : '';
-
-		if ( ! $key ) {
-			$error = new WP_Error( 'key_unreadable', __( 'The saved API key cannot be read (the site security keys may have changed). Please enter the key again.', 'captain-live-chat-pro' ) );
-			self::record_last_error( $error->get_error_message() );
-			return $error;
-		}
+		// Retrieve recent conversation history so follow-up questions have context.
+		$history = self::get_recent_conversation_history( (int) $thread_id, 10 );
 
 		// Reserve the usage slot BEFORE the slow network call so concurrent
 		// requests cannot all slip under the daily limit; give it back if
 		// the call fails.
 		self::record_usage();
 
-		$reply = self::call_provider( $provider, $key, $model, $visitor_message, $prompt );
+		$reply = self::call_provider( $provider, $key, $model, $visitor_message, $prompt, $history );
 
 		if ( is_wp_error( $reply ) ) {
 			self::release_usage();
@@ -513,6 +517,49 @@ class CAPTLC_AI {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name comes from the free plugin's own helper; all values are bound by prepare().
 		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE thread_id = %d AND sender_type = 'agent' AND sender_id IS NULL", $thread_id ) );
+	}
+
+	/**
+	 * Retrieves recent conversation turns for context in multi-turn dialogues.
+	 *
+	 * @param int $thread_id Thread ID.
+	 * @param int $limit Maximum number of turns.
+	 * @return array Array of associative arrays with 'role' ('user'|'assistant') and 'content'.
+	 */
+	public static function get_recent_conversation_history( $thread_id, $limit = 6 ) {
+		global $wpdb;
+
+		if ( ! class_exists( 'CAPTLC_DB' ) || $thread_id < 1 ) {
+			return array();
+		}
+
+		$table = CAPTLC_DB::messages_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT sender_type, message FROM (
+					SELECT id, sender_type, message FROM {$table}
+					WHERE thread_id = %d AND sender_type IN ('visitor', 'agent')
+					ORDER BY id DESC LIMIT %d
+				) recent ORDER BY id ASC",
+				$thread_id,
+				$limit
+			)
+		);
+
+		$history = array();
+		if ( ! empty( $rows ) ) {
+			foreach ( $rows as $row ) {
+				$role      = ( 'visitor' === $row->sender_type ) ? 'user' : 'assistant';
+				$history[] = array(
+					'role'    => $role,
+					'content' => $row->message,
+				);
+			}
+		}
+
+		return $history;
 	}
 
 	/**
@@ -692,9 +739,10 @@ class CAPTLC_AI {
 	 * @param string $model    Model name.
 	 * @param string $message  User message.
 	 * @param string $system   System prompt.
+	 * @param array  $history  Recent conversation turns.
 	 * @return string|WP_Error Reply text or error.
 	 */
-	private static function call_provider( $provider, $api_key, $model, $message, $system ) {
+	private static function call_provider( $provider, $api_key, $model, $message, $system, $history = array() ) {
 		// A model the provider has already shut down only ever returns an
 		// error; fall back to the provider's own default instead.
 		$retired = (array) apply_filters(
@@ -715,7 +763,8 @@ class CAPTLC_AI {
 					$message,
 					$system,
 					array(),
-					'max_completion_tokens'
+					'max_completion_tokens',
+					$history
 				);
 
 			case 'openai':
@@ -726,7 +775,8 @@ class CAPTLC_AI {
 					$message,
 					$system,
 					array(),
-					'max_completion_tokens'
+					'max_completion_tokens',
+					$history
 				);
 
 			case 'openrouter':
@@ -739,14 +789,16 @@ class CAPTLC_AI {
 					array(
 						'HTTP-Referer' => home_url(),
 						'X-Title'      => get_bloginfo( 'name' ),
-					)
+					),
+					'max_tokens',
+					$history
 				);
 
 			case 'gemini':
-				return self::call_gemini( $api_key, $model ? $model : 'gemini-3.5-flash', $message, $system );
+				return self::call_gemini( $api_key, $model ? $model : 'gemini-3.5-flash', $message, $system, $history );
 
 			case 'anthropic':
-				return self::call_anthropic( $api_key, $model ? $model : 'claude-haiku-4-5-20251001', $message, $system );
+				return self::call_anthropic( $api_key, $model ? $model : 'claude-haiku-4-5-20251001', $message, $system, $history );
 
 			default:
 				return new WP_Error( 'unknown_provider', __( 'Unknown AI provider.', 'captain-live-chat-pro' ) );
@@ -764,9 +816,10 @@ class CAPTLC_AI {
 	 * @param array  $extra_headers Extra HTTP headers.
 	 * @param string $token_param   Name of the output-token limit field. Newer OpenAI
 	 *                              models require max_completion_tokens and reject max_tokens.
+	 * @param array  $history       Recent conversation turns.
 	 * @return string|WP_Error
 	 */
-	private static function call_openai_compatible( $url, $key, $model, $message, $system, $extra_headers = array(), $token_param = 'max_tokens' ) {
+	private static function call_openai_compatible( $url, $key, $model, $message, $system, $extra_headers = array(), $token_param = 'max_tokens', $history = array() ) {
 		$messages = array();
 
 		if ( $system ) {
@@ -776,10 +829,23 @@ class CAPTLC_AI {
 			);
 		}
 
-		$messages[] = array(
-			'role'    => 'user',
-			'content' => $message,
-		);
+		if ( ! empty( $history ) ) {
+			$last_hist = end( $history );
+			if ( $last_hist && 'user' === $last_hist['role'] && trim( (string) $last_hist['content'] ) === trim( (string) $message ) ) {
+				$messages = array_merge( $messages, $history );
+			} else {
+				$messages = array_merge( $messages, $history );
+				$messages[] = array(
+					'role'    => 'user',
+					'content' => $message,
+				);
+			}
+		} else {
+			$messages[] = array(
+				'role'    => 'user',
+				'content' => $message,
+			);
+		}
 
 		$headers = array_merge(
 			array(
@@ -830,14 +896,35 @@ class CAPTLC_AI {
 	 * @param string $model   Model name.
 	 * @param string $message User message.
 	 * @param string $system  System prompt.
+	 * @param array  $history Recent conversation turns.
 	 * @return string|WP_Error
 	 */
-	private static function call_gemini( $key, $model, $message, $system ) {
+	private static function call_gemini( $key, $model, $message, $system, $history = array() ) {
 		// The key travels in a header, never in the URL (URLs end up in logs).
 		$url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode( $model ) . ':generateContent';
 
-		$parts   = array();
-		$prompt  = $system ? $system . "\n\nVisitor: " . $message : $message;
+		$parts  = array();
+		$prompt = '';
+
+		if ( $system ) {
+			$prompt .= $system . "\n\n";
+		}
+
+		if ( ! empty( $history ) ) {
+			$prompt .= "Previous conversation context:\n";
+			foreach ( $history as $h ) {
+				$speaker = ( 'user' === $h['role'] ) ? 'Visitor' : 'Assistant';
+				$prompt .= $speaker . ': ' . $h['content'] . "\n";
+			}
+			$last_hist = end( $history );
+			if ( ! $last_hist || trim( (string) $last_hist['content'] ) !== trim( (string) $message ) ) {
+				$prompt .= 'Visitor: ' . $message . "\n";
+			}
+			$prompt .= 'Assistant: ';
+		} else {
+			$prompt .= 'Visitor: ' . $message;
+		}
+
 		$parts[] = array( 'text' => $prompt );
 
 		$response = wp_remote_post(
@@ -879,18 +966,54 @@ class CAPTLC_AI {
 	 * @param string $model   Model name.
 	 * @param string $message User message.
 	 * @param string $system  System prompt.
+	 * @param array  $history Recent conversation turns.
 	 * @return string|WP_Error
 	 */
-	private static function call_anthropic( $key, $model, $message, $system ) {
+	private static function call_anthropic( $key, $model, $message, $system, $history = array() ) {
+		$formatted_messages = array();
+
+		if ( ! empty( $history ) ) {
+			$current_role = null;
+			foreach ( $history as $h ) {
+				$role = ( 'user' === $h['role'] ) ? 'user' : 'assistant';
+				if ( empty( $formatted_messages ) && 'user' !== $role ) {
+					continue;
+				}
+				if ( $role === $current_role ) {
+					$last_idx = count( $formatted_messages ) - 1;
+					$formatted_messages[ $last_idx ]['content'] .= "\n" . $h['content'];
+				} else {
+					$formatted_messages[] = array(
+						'role'    => $role,
+						'content' => $h['content'],
+					);
+					$current_role         = $role;
+				}
+			}
+
+			$last_msg = end( $formatted_messages );
+			if ( ! $last_msg || 'user' !== $last_msg['role'] || trim( (string) $last_msg['content'] ) !== trim( (string) $message ) ) {
+				if ( $last_msg && 'user' === $last_msg['role'] ) {
+					$last_idx = count( $formatted_messages ) - 1;
+					$formatted_messages[ $last_idx ]['content'] .= "\n" . $message;
+				} else {
+					$formatted_messages[] = array(
+						'role'    => 'user',
+						'content' => $message,
+					);
+				}
+			}
+		} else {
+			$formatted_messages[] = array(
+				'role'    => 'user',
+				'content' => $message,
+			);
+		}
+
 		$body = array(
 			'model'      => $model,
 			'max_tokens' => self::max_output_tokens(),
-			'messages'   => array(
-				array(
-					'role'    => 'user',
-					'content' => $message,
-				),
-			),
+			'messages'   => $formatted_messages,
 		);
 
 		if ( $system ) {

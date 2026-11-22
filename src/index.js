@@ -1,6 +1,7 @@
 import AiSettings from './page/ai_settings/ai_settings.jsx';
 import WhiteLabelSettings from './page/white_label/white_label.jsx';
 import ProfileAlerts from './page/profile_alerts/profile_alerts.jsx';
+import LiveVisitors from './page/live_visitors/live_visitors.jsx';
 
 /**
  * This script is enqueued as a dependency of the free plugin's own
@@ -15,6 +16,7 @@ if ( typeof window !== 'undefined' && window.CaptlcExtensions ) {
 	if ( typeof window.CaptlcExtensions.registerPage === 'function' ) {
 		window.CaptlcExtensions.registerPage( 'ai-settings', AiSettings );
 		window.CaptlcExtensions.registerPage( 'white-label', WhiteLabelSettings );
+		window.CaptlcExtensions.registerPage( 'live-visitors', LiveVisitors );
 		// Each agent's own pop-up alert switches on the Profile page.
 		window.CaptlcExtensions.registerPage( 'profile-alerts', ProfileAlerts );
 	}

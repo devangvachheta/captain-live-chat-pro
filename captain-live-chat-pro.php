@@ -1,11 +1,13 @@
 <?php
 /**
  * Plugin Name:       Captain Live Chat Pro
- * Description:       Adds an AI agent with a knowledge base, chat history export and white labelling to Captain Live Chat. Requires the free Captain Live Chat plugin. Bring your own API key for Groq, OpenAI, OpenRouter, Google Gemini, or Anthropic.
+ * Plugin URI:        https://captainplugins.com/captain-live-chat-pro
+ * Description:       Adds an AI agent with a knowledge base, live visitor monitoring, proactive greetings, post-chat CSAT surveys, email transcripts, chat history export and white labelling to Captain Live Chat. Requires the free Captain Live Chat plugin.
  * Version:           1.0.0
  * Author:            devangvachheta
  * Text Domain:       captain-live-chat-pro
- * Requires at least: 6.9
+ * Domain Path:       /languages
+ * Requires at least: 6.0
  * Requires PHP:      7.4
  * Requires Plugins:  captain-live-chat
  * License:           GPL-2.0-or-later
@@ -26,7 +28,7 @@ define( 'CAPTLC_PRO_VERSION', '1.0.0' );
 // Oldest free Captain Live Chat this add-on works with. Older versions are
 // missing code Pro relies on, so Pro stays switched off (with a notice)
 // instead of crashing the site.
-define( 'CAPTLC_PRO_MIN_FREE_VERSION', '1.1.1' );
+define( 'CAPTLC_PRO_MIN_FREE_VERSION', '1.1.3' );
 define( 'CAPTLC_PRO_FILE', __FILE__ );
 define( 'CAPTLC_PRO_PATH', plugin_dir_path( __FILE__ ) );
 define( 'CAPTLC_PRO_URL', plugin_dir_url( __FILE__ ) );
@@ -38,11 +40,11 @@ define( 'CAPTLC_PRO_URL', plugin_dir_url( __FILE__ ) );
  * @return string
  */
 function captlc_pro_dependency_problem() {
-	if ( ! class_exists( 'CAPTLC_Ajax' ) ) {
+	if ( ! class_exists( 'CAPTLC_Ajax' ) || ! class_exists( 'CAPTLC_Public' ) ) {
 		return 'missing';
 	}
 
-	if ( ! defined( 'CAPTLC_VERSION' ) || version_compare( CAPTLC_VERSION, CAPTLC_PRO_MIN_FREE_VERSION, '<' ) ) {
+	if ( ! defined( 'CAPTLC_VERSION' ) || version_compare( CAPTLC_VERSION, CAPTLC_PRO_MIN_FREE_VERSION, '<' ) || ! method_exists( 'CAPTLC_Public', 'get_launcher_state' ) ) {
 		return 'outdated';
 	}
 
@@ -132,9 +134,49 @@ function captlc_pro_init() {
 	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-alerts.php';
 	new CAPTLC_Pro_Alerts();
 
+	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-proactive-greeting.php';
+	new CAPTLC_Pro_Proactive_Greeting();
+
+	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-email-transcript.php';
+	new CAPTLC_Pro_Email_Transcript();
+
+	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-survey.php';
+	new CAPTLC_Pro_Survey();
+
+	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-live-visitors.php';
+	new CAPTLC_Pro_Live_Visitors();
+
+	require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-privacy.php';
+	CAPTLC_Pro_Privacy::init();
+
 	if ( is_admin() ) {
 		require_once CAPTLC_PRO_PATH . 'includes/class-captlc-pro-admin.php';
 		new CAPTLC_Pro_Admin();
 	}
 }
 add_action( 'plugins_loaded', 'captlc_pro_init', 20 );
+
+register_activation_hook( CAPTLC_PRO_FILE, 'captlc_pro_activate' );
+register_deactivation_hook( CAPTLC_PRO_FILE, 'captlc_pro_deactivate' );
+
+/**
+ * Runs on Pro plugin activation.
+ * Schedules cron cleanup tasks cleanly instead of on every request.
+ *
+ * @return void
+ */
+function captlc_pro_activate() {
+	if ( ! wp_next_scheduled( 'captlc_hourly_cleanup' ) ) {
+		wp_schedule_event( time(), 'hourly', 'captlc_hourly_cleanup' );
+	}
+}
+
+/**
+ * Runs on Pro plugin deactivation.
+ * Clears scheduled cron tasks.
+ *
+ * @return void
+ */
+function captlc_pro_deactivate() {
+	wp_clear_scheduled_hook( 'captlc_hourly_cleanup' );
+}

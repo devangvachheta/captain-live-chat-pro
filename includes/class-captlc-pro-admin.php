@@ -54,12 +54,15 @@ class CAPTLC_Pro_Admin {
 
 		$asset = require $asset_file;
 
+		$css_file = CAPTLC_PRO_PATH . 'build/index.css';
+		$css_ver  = file_exists( $css_file ) ? CAPTLC_PRO_VERSION . '.' . filemtime( $css_file ) : CAPTLC_PRO_VERSION;
+
 		// Versioned by file time, so the new stylesheet is fetched after every build.
 		wp_enqueue_style(
 			'captlc-pro-css',
 			CAPTLC_PRO_URL . 'build/index.css',
 			array(),
-			CAPTLC_PRO_VERSION . '.' . filemtime( CAPTLC_PRO_PATH . 'build/index.css' )
+			$css_ver
 		);
 		wp_style_add_data( 'captlc-pro-css', 'rtl', 'replace' );
 
@@ -71,6 +74,6 @@ class CAPTLC_Pro_Admin {
 			true
 		);
 
-		wp_set_script_translations( 'captlc-pro-script', 'captain-live-chat-pro' );
+		wp_set_script_translations( 'captlc-pro-script', 'captain-live-chat-pro', CAPTLC_PRO_PATH . 'languages' );
 	}
 }

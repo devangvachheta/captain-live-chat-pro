@@ -17,7 +17,39 @@
 }
 
 .captlc-ai-settings__header {
-	margin-bottom: 4px;
+	margin-bottom: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.captlc-ai-video-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #ef4444 !important;
+	background: rgba(239, 68, 68, 0.08);
+	border: 1px solid rgba(239, 68, 68, 0.25);
+	border-radius: 8px;
+	text-decoration: none !important;
+	transition: all 0.15s ease;
+
+	svg {
+		color: #ef4444;
+		flex-shrink: 0;
+	}
+
+	&:hover {
+		background: rgba(239, 68, 68, 0.14);
+		border-color: rgba(239, 68, 68, 0.4);
+		color: #dc2626 !important;
+		transform: translateY(-1px);
+	}
 }
 
 // ── Small action buttons - smaller than the app-wide default ──────────────

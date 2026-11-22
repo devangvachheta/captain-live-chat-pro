@@ -60,6 +60,10 @@ const ProfileAlerts = () => {
 		const next     = { ...prefs, ...change };
 		const previous = prefs;
 
+		if ( change.enabled && typeof Notification !== 'undefined' && Notification.permission === 'default' ) {
+			Notification.requestPermission();
+		}
+
 		setPrefs( next );
 		setSaving( true );
 		setStatus( { type: '', msg: '' } );

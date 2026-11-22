@@ -131,6 +131,13 @@ class CAPTLC_Pro_Export {
 			}
 		}
 
+		if ( count( $threads ) >= 2000 ) {
+			$rows[] = array(
+				__( 'NOTE: Maximum export limit of 2,000 conversations reached. Please use date or status filters to export more records.', 'captain-live-chat-pro' ),
+				'', '', '', '', '', '', '', '', ''
+			);
+		}
+
 		// UTF-8 byte order mark so Excel opens non-English names correctly.
 		$csv = "\xEF\xBB\xBF";
 
@@ -194,7 +201,7 @@ class CAPTLC_Pro_Export {
 		$messages_table = CAPTLC_DB::messages_table();
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$thread = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$threads_table} WHERE id = %d", $thread_id ) );
+		$thread = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$threads_table} WHERE id = %d AND deleted_at IS NULL", $thread_id ) );
 		if ( ! $thread ) {
 			return new WP_Error( 'thread_not_found', __( 'Thread not found.', 'captain-live-chat-pro' ) );
 		}
@@ -212,32 +219,32 @@ class CAPTLC_Pro_Export {
 
 		$lines   = array();
 		$lines[] = '============================================================';
-		$lines[] = 'CAPTAIN LIVE CHAT - CONVERSATION TRANSCRIPT';
+		$lines[] = __( 'CAPTAIN LIVE CHAT - CONVERSATION TRANSCRIPT', 'captain-live-chat-pro' );
 		$lines[] = '============================================================';
-		$lines[] = 'Conversation ID : #' . $thread->id;
-		$lines[] = 'Visitor Name    : ' . ( $thread->visitor_name ? $thread->visitor_name : 'Anonymous Visitor' );
-		$lines[] = 'Visitor Email   : ' . ( $thread->visitor_email ? $thread->visitor_email : 'None' );
-		$lines[] = 'Status          : ' . ucfirst( $thread->status );
-		$lines[] = 'Assigned Agent  : ' . $assigned_agent;
-		$lines[] = 'Date Started    : ' . $thread->created_at;
-		$lines[] = 'Browser / Device: ' . ( implode( ' / ', array_filter( array( $thread->browser, $thread->device ) ) ) ? implode( ' / ', array_filter( array( $thread->browser, $thread->device ) ) ) : 'Unknown' );
+		$lines[] = __( 'Conversation ID :', 'captain-live-chat-pro' ) . ' #' . $thread->id;
+		$lines[] = __( 'Visitor Name    :', 'captain-live-chat-pro' ) . ' ' . ( $thread->visitor_name ? $thread->visitor_name : __( 'Anonymous Visitor', 'captain-live-chat-pro' ) );
+		$lines[] = __( 'Visitor Email   :', 'captain-live-chat-pro' ) . ' ' . ( $thread->visitor_email ? $thread->visitor_email : __( 'None', 'captain-live-chat-pro' ) );
+		$lines[] = __( 'Status          :', 'captain-live-chat-pro' ) . ' ' . ucfirst( $thread->status );
+		$lines[] = __( 'Assigned Agent  :', 'captain-live-chat-pro' ) . ' ' . $assigned_agent;
+		$lines[] = __( 'Date Started    :', 'captain-live-chat-pro' ) . ' ' . $thread->created_at;
+		$lines[] = __( 'Browser / Device:', 'captain-live-chat-pro' ) . ' ' . ( implode( ' / ', array_filter( array( $thread->browser, $thread->device ) ) ) ? implode( ' / ', array_filter( array( $thread->browser, $thread->device ) ) ) : __( 'Unknown', 'captain-live-chat-pro' ) );
 		if ( ! empty( $thread->source_url ) ) {
-			$lines[] = 'Source URL      : ' . $thread->source_url;
+			$lines[] = __( 'Source URL      :', 'captain-live-chat-pro' ) . ' ' . $thread->source_url;
 		}
-		$lines[] = 'Total Messages  : ' . count( $messages );
+		$lines[] = __( 'Total Messages  :', 'captain-live-chat-pro' ) . ' ' . count( $messages );
 		$lines[] = '============================================================';
 		$lines[] = '';
 
 		if ( empty( $messages ) ) {
-			$lines[] = '[No messages recorded in this conversation]';
+			$lines[] = __( '[No messages recorded in this conversation]', 'captain-live-chat-pro' );
 		} else {
 			$agent_names = array();
 
 			foreach ( $messages as $msg ) {
 				if ( 'visitor' === $msg->sender_type ) {
-					$sender = $thread->visitor_name ? $thread->visitor_name : 'Visitor';
+					$sender = $thread->visitor_name ? $thread->visitor_name : __( 'Visitor', 'captain-live-chat-pro' );
 				} elseif ( 'system' === $msg->sender_type ) {
-					$sender = 'System';
+					$sender = __( 'System', 'captain-live-chat-pro' );
 				} else {
 					// The messages table stores only the agent's user id; look the
 					// name up. No id means the AI agent wrote it; id 0 is the automatic
@@ -273,9 +280,13 @@ class CAPTLC_Pro_Export {
 		$lines[] = 'End of Transcript - Exported on ' . current_time( 'mysql' );
 		$lines[] = '============================================================';
 
+		$raw_slug   = sanitize_title( $thread->visitor_name ? $thread->visitor_name : 'visitor' );
+		$clean_slug = trim( preg_replace( '/%[0-9a-fA-F]{2}/', '', $raw_slug ), '-' );
+		$slug       = ! empty( $clean_slug ) ? $clean_slug : 'visitor';
+
 		return array(
 			'transcript' => implode( "\r\n", $lines ),
-			'filename'   => sprintf( 'chat-transcript-%d-%s.txt', $thread->id, sanitize_title( $thread->visitor_name ? $thread->visitor_name : 'visitor' ) ),
+			'filename'   => sprintf( 'chat-transcript-%d-%s.txt', $thread->id, $slug ),
 		);
 	}
 }
