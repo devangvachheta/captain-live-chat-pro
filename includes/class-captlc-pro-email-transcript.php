@@ -276,6 +276,7 @@ class CAPTLC_Pro_Email_Transcript {
 		}
 
 		$lines   = array();
+		/* translators: %d: chat thread ID */
 		$lines[] = get_bloginfo( 'name' ) . ' - ' . sprintf( __( 'Chat Transcript #%d', 'captain-live-chat-pro' ), $thread->id );
 		$lines[] = '========================================';
 		foreach ( $messages as $m ) {
